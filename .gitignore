@@ -399,3 +399,4 @@ FodyWeavers.xsd
 ImageGallery/.idea
 ImageGallery/ImageGallery.API/Properties/launchSettings.json
 ImageGallery/ImageGallery.Client/Properties/launchSettings.json
+ImageGallery/IdentityServer.Web/keys
