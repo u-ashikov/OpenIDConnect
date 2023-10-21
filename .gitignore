@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+ImageGallery/.idea
+ImageGallery/ImageGallery.API/Properties/launchSettings.json
+ImageGallery/ImageGallery.Client/Properties/launchSettings.json
