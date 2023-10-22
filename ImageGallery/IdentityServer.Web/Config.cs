@@ -30,7 +30,7 @@ public static class Config
                 ClientName = "Image Gallery",
                 RedirectUris = new List<string>()
                 {
-                    "https://localhost:5001/signin-oidc"
+                    "https://localhost:7184/signin-oidc"
                 },
                 AllowedGrantTypes = GrantTypes.Code,
                 AllowedScopes =

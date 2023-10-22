@@ -2,9 +2,11 @@
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Mvc; 
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ImageGallery.Client.Controllers
 {
+    [Authorize]
     public class GalleryController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
@@ -31,11 +33,9 @@ namespace ImageGallery.Client.Controllers
 
             response.EnsureSuccessStatusCode();
 
-            using (var responseStream = await response.Content.ReadAsStreamAsync())
-            {
-                var images = await JsonSerializer.DeserializeAsync<List<Image>>(responseStream);
-                return View(new GalleryIndexViewModel(images ?? new List<Image>()));
-            }
+            await using var responseStream = await response.Content.ReadAsStreamAsync();
+            var images = await JsonSerializer.DeserializeAsync<List<Image>>(responseStream);
+            return View(new GalleryIndexViewModel(images ?? new List<Image>()));
         }
 
         public async Task<IActionResult> EditImage(Guid id)
