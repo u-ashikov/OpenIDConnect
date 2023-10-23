@@ -28,9 +28,13 @@ public static class Config
                 {
                     new Secret("secret".ToSha256())
                 },
-                RedirectUris = new List<string>()
+                RedirectUris =
                 {
                     "https://localhost:7184/signin-oidc"
+                },
+                PostLogoutRedirectUris =
+                {
+                    "https://localhost:7184/signout-callback-oidc"
                 },
                 AllowedGrantTypes = GrantTypes.Code,
                 AllowedScopes =
