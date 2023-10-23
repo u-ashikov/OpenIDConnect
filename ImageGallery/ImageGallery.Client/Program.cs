@@ -11,7 +11,7 @@ builder.Services.AddControllersWithViews()
     .AddJsonOptions(configure => 
         configure.JsonSerializerOptions.PropertyNamingPolicy = null);
 
-// create an HttpClient used for accessing the API
+// Create an HttpClient used for accessing the API.
 builder.Services.AddHttpClient("APIClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ImageGalleryAPIRoot"]);

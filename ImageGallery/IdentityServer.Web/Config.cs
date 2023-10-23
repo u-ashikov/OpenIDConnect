@@ -1,8 +1,8 @@
-﻿using Duende.IdentityServer;
+﻿namespace IdentityServer.Web;
+
+using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
 using IdentityModel;
-
-namespace IdentityServer.Web;
 
 public static class Config
 {
@@ -23,11 +23,11 @@ public static class Config
             new Client()
             {
                 ClientId = "imagegallery",
+                ClientName = "Image Gallery",
                 ClientSecrets = new List<Secret>()
                 {
                     new Secret("secret".ToSha256())
                 },
-                ClientName = "Image Gallery",
                 RedirectUris = new List<string>()
                 {
                     "https://localhost:7184/signin-oidc"
