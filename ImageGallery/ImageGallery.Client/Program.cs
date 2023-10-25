@@ -36,6 +36,7 @@ builder.Services.AddAuthentication(options =>
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
         options.SaveTokens = true;
+        options.GetClaimsFromUserInfoEndpoint = true;
     });
 
 var app = builder.Build();
