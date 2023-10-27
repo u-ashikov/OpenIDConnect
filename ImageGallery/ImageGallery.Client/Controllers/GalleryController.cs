@@ -2,6 +2,8 @@
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Mvc; 
 using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ImageGallery.Client.Controllers
@@ -20,8 +22,10 @@ namespace ImageGallery.Client.Controllers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
+            await this.LogUserInformationAsync(cancellationToken).ConfigureAwait(false);
+            
             var httpClient = _httpClientFactory.CreateClient("APIClient");
 
             var request = new HttpRequestMessage(
@@ -174,6 +178,18 @@ namespace ImageGallery.Client.Controllers
             response.EnsureSuccessStatusCode();
 
             return RedirectToAction("Index");
+        }
+
+        private async Task LogUserInformationAsync(CancellationToken cancellationToken)
+        {
+            var token = await this.HttpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "access_token").ConfigureAwait(false);
+            
+            Console.WriteLine($"Access Token: {token}");
+
+            foreach (var userClaim in this.User.Claims)
+            {
+                Console.WriteLine($"ClaimType: {userClaim.Type}, ClaimValue: {userClaim.Value}.");
+            }
         }
     }
 }
