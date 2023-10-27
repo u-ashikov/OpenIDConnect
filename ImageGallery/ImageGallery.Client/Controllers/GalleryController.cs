@@ -126,11 +126,13 @@ namespace ImageGallery.Client.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "ProUser")]
         public IActionResult AddImage()
         {
             return View();
         }
 
+        [Authorize(Roles = "ProUser")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel)

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +47,11 @@ builder.Services.AddAuthentication(options =>
         options.ClaimActions.DeleteClaim("amr");
         options.ClaimActions.DeleteClaim("sid");
         options.ClaimActions.MapJsonKey("role", "role");
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            NameClaimType = "given_name",
+            RoleClaimType = "role",
+        };
     });
 
 var app = builder.Build();
