@@ -1,6 +1,7 @@
-using Serilog;
-
 namespace IdentityServer.Web;
+
+using IdentityServer.Web.Pages;
+using Serilog;
 
 internal static class HostingExtensions
 {

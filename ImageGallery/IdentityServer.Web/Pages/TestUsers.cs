@@ -2,11 +2,11 @@
 // See LICENSE in the project root for license information.
 
 
-using IdentityModel;
 using System.Security.Claims;
 using Duende.IdentityServer.Test;
+using IdentityModel;
 
-namespace IdentityServer.Web;
+namespace IdentityServer.Web.Pages;
 
 public class TestUsers
 {
@@ -22,7 +22,8 @@ public class TestUsers
                 Claims = new List<Claim>
                 {
                     new Claim(JwtClaimTypes.GivenName, "David"),
-                    new Claim(JwtClaimTypes.FamilyName, "Flagg")
+                    new Claim(JwtClaimTypes.FamilyName, "Flagg"),
+                    new Claim(JwtClaimTypes.Role, "FreeUser"),
                 }
             },
             new TestUser
@@ -34,7 +35,8 @@ public class TestUsers
                 Claims = new List<Claim>
                 {
                     new Claim(JwtClaimTypes.GivenName, "Emma"),
-                    new Claim(JwtClaimTypes.FamilyName, "Flagg")
+                    new Claim(JwtClaimTypes.FamilyName, "Flagg"),
+                    new Claim(JwtClaimTypes.Role, "ProUser")
                 }
             }
         };
