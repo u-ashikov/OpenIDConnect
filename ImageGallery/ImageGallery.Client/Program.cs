@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -12,6 +11,7 @@ IdentityModelEventSource.ShowPII = true;
 
 // Add services to the container.
 builder.Services.AddControllersWithViews()
+    .AddRazorRuntimeCompilation()
     .AddJsonOptions(configure => 
         configure.JsonSerializerOptions.PropertyNamingPolicy = null);
 
@@ -29,7 +29,10 @@ builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-    }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+    }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.AccessDeniedPath = "/Authentication/AccessDenied";
+    })
     .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
     {
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
