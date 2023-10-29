@@ -1,4 +1,6 @@
-﻿namespace IdentityServer.Web;
+﻿using System.Collections;
+
+namespace IdentityServer.Web;
 
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
@@ -12,6 +14,12 @@ public static class Config
             new IdentityResources.OpenId(),
             new IdentityResources.Profile(),
             new IdentityResource("roles", "Your roles", new[] { "role"}),
+        };
+
+    public static IEnumerable<ApiResource> ApiResources =>
+        new ApiResource[]
+        {
+            new ApiResource("imagegalleryapi", "Image Gallery API"),
         };
 
     public static IEnumerable<ApiScope> ApiScopes =>
@@ -42,7 +50,8 @@ public static class Config
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
                     IdentityServerConstants.StandardScopes.Profile,
-                    "roles"
+                    "roles",
+                    "imagegalleryapi",
                 }
             }
         };
