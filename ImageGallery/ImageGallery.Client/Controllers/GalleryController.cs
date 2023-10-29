@@ -184,14 +184,14 @@ namespace ImageGallery.Client.Controllers
 
         private async Task LogUserInformationAsync(CancellationToken cancellationToken)
         {
-            var token = await this.HttpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "access_token").ConfigureAwait(false);
+            var idToken = await this.HttpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "id_token").ConfigureAwait(false);
+            var accessToken = await this.HttpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "access_token").ConfigureAwait(false);
             
-            Console.WriteLine($"Access Token: {token}");
+            this._logger.LogInformation($"Identity Token: {idToken}");
+            this._logger.LogInformation($"Access Token: {accessToken}");
 
             foreach (var userClaim in this.User.Claims)
-            {
-                Console.WriteLine($"ClaimType: {userClaim.Type}, ClaimValue: {userClaim.Value}.");
-            }
+                this._logger.LogInformation($"ClaimType: {userClaim.Type}, ClaimValue: {userClaim.Value}.");
         }
     }
 }
