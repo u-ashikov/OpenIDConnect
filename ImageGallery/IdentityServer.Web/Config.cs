@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace IdentityServer.Web;
+﻿namespace IdentityServer.Web;
 
 using Duende.IdentityServer;
 using Duende.IdentityServer.Models;
@@ -13,7 +11,7 @@ public static class Config
         {
             new IdentityResources.OpenId(),
             new IdentityResources.Profile(),
-            new IdentityResource("roles", "Your roles", new[] { "role"}),
+            new IdentityResource("roles", "Your roles", new[] { "role" }),
         };
 
     public static IEnumerable<ApiResource> ApiResources =>
