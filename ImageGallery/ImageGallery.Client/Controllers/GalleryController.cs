@@ -1,7 +1,8 @@
-﻿using ImageGallery.Client.Infrastructure;
+﻿using ImageGallery.Client.Common;
 
 namespace ImageGallery.Client.Controllers;
 
+using ImageGallery.Client.Infrastructure;
 using ImageGallery.Client.ViewModels;
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Mvc; 
@@ -34,37 +35,20 @@ public class GalleryController : Controller
         return View(new GalleryIndexViewModel(images));
     }
 
-    public async Task<IActionResult> EditImage(Guid id)
+    public async Task<IActionResult> EditImage(Guid id, CancellationToken cancellationToken)
     {
+        var image = await this._imageGalleryApiHttpClient.GetByIdAsync(id.ToString(), cancellationToken).ConfigureAwait(false);
 
-        var httpClient = _httpClientFactory.CreateClient("APIClient");
+        if (image == null)
+            throw new Exception(WebConstants.Messages.NullImage);
 
-        var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            $"/api/images/{id}");
-
-        var response = await httpClient.SendAsync(
-            request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
-
-        response.EnsureSuccessStatusCode();
-
-        using (var responseStream = await response.Content.ReadAsStreamAsync())
+        var editImageViewModel = new EditImageViewModel()
         {
-            var deserializedImage = await JsonSerializer.DeserializeAsync<Image>(responseStream);
+            Id = image.Id,
+            Title = image.Title
+        };
 
-            if (deserializedImage == null)
-            {
-                throw new Exception("Deserialized image must not be null.");
-            }
-
-            var editImageViewModel = new EditImageViewModel()
-            {
-                Id = deserializedImage.Id,
-                Title = deserializedImage.Title
-            };
-
-            return View(editImageViewModel);
-        }
+        return this.View(editImageViewModel);
     }
 
     [HttpPost]

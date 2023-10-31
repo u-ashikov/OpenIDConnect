@@ -28,6 +28,18 @@ public class ImageGalleryApiHttpClient
         return images;
     }
 
+    public async Task<Image> GetByIdAsync(string id, CancellationToken cancellationToken)
+    {
+        var url = string.Format(WebConstants.ApiClient.ImageByIdEndpoint, id);
+        var response = await this.SendInternallyAsync(url, HttpMethod.Get, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        await using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var foundImage = await JsonSerializer.DeserializeAsync<Image>(responseContent, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return foundImage;
+    }
+
     private async Task<HttpResponseMessage> SendInternallyAsync(string url, HttpMethod httpMethod, CancellationToken cancellationToken)
     {
         var accessToken = await this._httpContextAccessor.HttpContext.GetTokenAsync("access_token").ConfigureAwait(false);

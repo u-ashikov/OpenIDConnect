@@ -1,13 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace ImageGallery.Client.ViewModels;
 
-namespace ImageGallery.Client.ViewModels
+using System.ComponentModel.DataAnnotations;
+
+public class EditImageViewModel
 {
-    public class EditImageViewModel
-    {
-        [Required]
-        public string Title { get; set; } = string.Empty;
-
-        [Required]
-        public Guid Id { get; set; }  
-    }
+    [Required]
+    public Guid Id { get; set; }  
+    
+    [Required]
+    public string Title { get; set; } = string.Empty;
 }
