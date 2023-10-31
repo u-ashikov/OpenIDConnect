@@ -19,7 +19,8 @@ public class ImageGalleryApiHttpClient
 
     public async Task<IEnumerable<Image>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var response = await this.SendInternallyAsync(WebConstants.ApiClient.GetAllImagesEndpoint, HttpMethod.Get, cancellationToken).ConfigureAwait(false);
+        var httpRequest = new HttpRequestMessage(HttpMethod.Get, WebConstants.ApiClient.GetAllImagesEndpoint);
+        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         await using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -31,7 +32,9 @@ public class ImageGalleryApiHttpClient
     public async Task<Image> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         var url = string.Format(WebConstants.ApiClient.ImageByIdEndpoint, id);
-        var response = await this.SendInternallyAsync(url, HttpMethod.Get, cancellationToken).ConfigureAwait(false);
+        var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
+        
+        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         await using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -40,10 +43,53 @@ public class ImageGalleryApiHttpClient
         return foundImage;
     }
 
-    private async Task<HttpResponseMessage> SendInternallyAsync(string url, HttpMethod httpMethod, CancellationToken cancellationToken)
+    public async Task CreateAsync(ImageForCreation imageForCreation, CancellationToken cancellationToken)
+    {
+        var serializedImageForCreation = JsonSerializer.Serialize(imageForCreation);
+
+        var httpRequest = new HttpRequestMessage(
+            HttpMethod.Post,
+            WebConstants.ApiClient.GetAllImagesEndpoint)
+        {
+            Content = new StringContent(
+                serializedImageForCreation,
+                System.Text.Encoding.Unicode,
+                "application/json")
+        };
+
+        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task UpdateAsync(string id, ImageForUpdate imageForUpdate, CancellationToken cancellationToken)
+    {
+        var serializedImageForUpdate = JsonSerializer.Serialize(imageForUpdate);
+        var url = string.Format(WebConstants.ApiClient.ImageByIdEndpoint, id);
+        
+        var httpRequest = new HttpRequestMessage(HttpMethod.Put, url)
+        {
+            Content = new StringContent(
+                serializedImageForUpdate,
+                System.Text.Encoding.Unicode,
+                "application/json")
+        };
+
+        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task DeleteAsync(string id, CancellationToken cancellationToken)
+    {
+        var url = string.Format(WebConstants.ApiClient.ImageByIdEndpoint, id);
+        var httpRequest = new HttpRequestMessage(HttpMethod.Delete, url);
+
+        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
+    private async Task<HttpResponseMessage> SendInternallyAsync(HttpRequestMessage httpRequest, CancellationToken cancellationToken)
     {
         var accessToken = await this._httpContextAccessor.HttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
-        var httpRequest = new HttpRequestMessage(httpMethod, url);
         httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         return await this._httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);

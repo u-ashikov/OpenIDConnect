@@ -1,12 +1,10 @@
-﻿using ImageGallery.Client.Common;
+﻿namespace ImageGallery.Client.Controllers;
 
-namespace ImageGallery.Client.Controllers;
-
+using ImageGallery.Client.Common;
 using ImageGallery.Client.Infrastructure;
 using ImageGallery.Client.ViewModels;
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Mvc; 
-using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -14,15 +12,11 @@ using Microsoft.AspNetCore.Authorization;
 [Authorize]
 public class GalleryController : Controller
 {
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly ImageGalleryApiHttpClient _imageGalleryApiHttpClient;
     private readonly ILogger<GalleryController> _logger;
 
-    public GalleryController(IHttpClientFactory httpClientFactory,
-        ImageGalleryApiHttpClient imageGalleryApiHttpClient,
-        ILogger<GalleryController> logger)
+    public GalleryController(ImageGalleryApiHttpClient imageGalleryApiHttpClient, ILogger<GalleryController> logger)
     {
-        this._httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         this._imageGalleryApiHttpClient = imageGalleryApiHttpClient ?? throw new ArgumentNullException(nameof(imageGalleryApiHttpClient));
         this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -53,70 +47,36 @@ public class GalleryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditImage(EditImageViewModel editImageViewModel)
+    public async Task<IActionResult> EditImage(EditImageViewModel editImageViewModel, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
-        {
-            return View();
-        }
-
-        // create an ImageForUpdate instance
+            return this.View();
+        
         var imageForUpdate = new ImageForUpdate(editImageViewModel.Title);
 
-        // serialize it
-        var serializedImageForUpdate = JsonSerializer.Serialize(imageForUpdate);
-
-        var httpClient = _httpClientFactory.CreateClient("APIClient");
-
-        var request = new HttpRequestMessage(
-            HttpMethod.Put,
-            $"/api/images/{editImageViewModel.Id}")
-        {
-            Content = new StringContent(
-                serializedImageForUpdate,
-                System.Text.Encoding.Unicode,
-                "application/json")
-        };
-
-        var response = await httpClient.SendAsync(
-            request, HttpCompletionOption.ResponseHeadersRead);
-
-        response.EnsureSuccessStatusCode();
+        // TODO: Return operation result.
+        await this._imageGalleryApiHttpClient.UpdateAsync(editImageViewModel.Id.ToString(), imageForUpdate, cancellationToken).ConfigureAwait(false);
 
         return RedirectToAction("Index");
     }
 
-    public async Task<IActionResult> DeleteImage(Guid id)
+    public async Task<IActionResult> DeleteImage(Guid id, CancellationToken cancellationToken)
     {
-        var httpClient = _httpClientFactory.CreateClient("APIClient");
+        await this._imageGalleryApiHttpClient.DeleteAsync(id.ToString(), cancellationToken).ConfigureAwait(false);
 
-        var request = new HttpRequestMessage(
-            HttpMethod.Delete,
-            $"/api/images/{id}");
-
-        var response = await httpClient.SendAsync(
-            request, HttpCompletionOption.ResponseHeadersRead);
-
-        response.EnsureSuccessStatusCode();
-
-        return RedirectToAction("Index");
+        return this.RedirectToAction("Index");
     }
 
     [Authorize(Roles = "ProUser")]
-    public IActionResult AddImage()
-    {
-        return View();
-    }
+    public IActionResult AddImage() => this.View();
 
     [Authorize(Roles = "ProUser")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel)
+    public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
-        {
             return View();
-        }
 
         // create an ImageForCreation instance
         ImageForCreation? imageForCreation = null;
@@ -126,34 +86,14 @@ public class GalleryController : Controller
 
         if (imageFile.Length > 0)
         {
-            using (var fileStream = imageFile.OpenReadStream())
-            using (var ms = new MemoryStream())
-            {
-                fileStream.CopyTo(ms);
-                imageForCreation = new ImageForCreation(
-                    addImageViewModel.Title, ms.ToArray());
-            }
+            await using var fileStream = imageFile.OpenReadStream();
+            using var ms = new MemoryStream();
+            
+            fileStream.CopyTo(ms);
+            imageForCreation = new ImageForCreation(addImageViewModel.Title, ms.ToArray());
         }
 
-        // serialize it
-        var serializedImageForCreation = JsonSerializer.Serialize(imageForCreation);
-
-        var httpClient = _httpClientFactory.CreateClient("APIClient");
-
-        var request = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"/api/images")
-        {
-            Content = new StringContent(
-                serializedImageForCreation,
-                System.Text.Encoding.Unicode,
-                "application/json")
-        };
-
-        var response = await httpClient.SendAsync(
-            request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
-
-        response.EnsureSuccessStatusCode();
+        await this._imageGalleryApiHttpClient.CreateAsync(imageForCreation, cancellationToken).ConfigureAwait(false);
 
         return RedirectToAction("Index");
     }
