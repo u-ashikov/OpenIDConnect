@@ -1,9 +1,9 @@
 ﻿namespace ImageGallery.Client.Controllers;
 
-using ImageGallery.Client.Common;
-using ImageGallery.Client.Infrastructure;
-using ImageGallery.Client.ViewModels;
-using ImageGallery.Model;
+using Common;
+using Infrastructure;
+using ViewModels;
+using Model;
 using Microsoft.AspNetCore.Mvc; 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -34,7 +34,7 @@ public class GalleryController : Controller
         var image = await this._imageGalleryApiHttpClient.GetByIdAsync(id.ToString(), cancellationToken).ConfigureAwait(false);
 
         if (image == null)
-            throw new Exception(WebConstants.Messages.NullImage);
+            throw new Exception(WebConstants.Messages.InvalidImage);
 
         var editImageViewModel = new EditImageViewModel()
         {

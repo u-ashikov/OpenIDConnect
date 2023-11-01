@@ -11,6 +11,6 @@ public static class WebConstants
     
     public static class Messages
     {
-        public const string NullImage = "The image must not be null.";
+        public const string InvalidImage = "The provided image is invalid.";
     }
 }

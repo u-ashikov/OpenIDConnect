@@ -11,10 +11,10 @@ public class ImageGalleryApiHttpClient
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ImageGalleryApiHttpClient(IHttpContextAccessor httpContextAccessor, HttpClient httpClient)
+    public ImageGalleryApiHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
     {
+        this._httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         this._httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
     public async Task<IEnumerable<Image>> GetAllAsync(CancellationToken cancellationToken)
