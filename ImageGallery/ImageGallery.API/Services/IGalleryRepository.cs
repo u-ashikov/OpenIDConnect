@@ -1,16 +1,15 @@
-﻿using ImageGallery.API.Entities;
+﻿namespace ImageGallery.API.Services;
 
-namespace ImageGallery.API.Services
+using Entities;
+
+public interface IGalleryRepository
 {
-    public interface IGalleryRepository
-    {
-        Task<IEnumerable<Image>> GetImagesAsync();
-        Task<bool> IsImageOwnerAsync(Guid id, string ownerId);
-        Task<Image?> GetImageAsync(Guid id);
-        Task<bool> ImageExistsAsync(Guid id);
-        void AddImage(Image image);
-        void UpdateImage(Image image);
-        void DeleteImage(Image image);
-        Task<bool> SaveChangesAsync();
-    }
+    Task<IEnumerable<Image>> GetImagesAsync(string ownerId);
+    Task<bool> IsImageOwnerAsync(Guid id, string ownerId);
+    Task<Image?> GetImageAsync(Guid id, string ownerId);
+    Task<bool> ImageExistsAsync(Guid id, string ownerId);
+    void AddImage(Image image);
+    void UpdateImage(Image image);
+    void DeleteImage(Image image);
+    Task<bool> SaveChangesAsync();
 }
