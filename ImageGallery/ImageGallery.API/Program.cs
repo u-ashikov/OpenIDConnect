@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using ImageGallery.API.DbContexts;
 using ImageGallery.API.Services;
+using ImageGallery.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -38,6 +39,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidTypes = new[] { "at+jwt" }
         };
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ImageCreatorPolicy", AuthorizationPolicies.ImageCreatorPolicy());
+});
 
 var app = builder.Build();
 
