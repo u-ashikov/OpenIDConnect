@@ -28,7 +28,7 @@ public class GalleryController : Controller
         var images = await this._imageGalleryApiHttpClient.GetAllAsync(cancellationToken).ConfigureAwait(false);
         return View(new GalleryIndexViewModel(images));
     }
-
+    
     public async Task<IActionResult> EditImage(Guid id, CancellationToken cancellationToken)
     {
         var image = await this._imageGalleryApiHttpClient.GetByIdAsync(id.ToString(), cancellationToken).ConfigureAwait(false);
@@ -67,10 +67,10 @@ public class GalleryController : Controller
         return this.RedirectToAction("Index");
     }
 
-    [Authorize(Roles = "ProUser")]
+    [Authorize(Policy = "ImageCreatorPolicy")]
     public IActionResult AddImage() => this.View();
 
-    [Authorize(Roles = "ProUser")]
+    [Authorize(Policy = "ImageCreatorPolicy")]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel, CancellationToken cancellationToken)

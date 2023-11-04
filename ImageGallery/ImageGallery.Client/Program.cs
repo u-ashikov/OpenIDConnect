@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using ImageGallery.Authorization;
 using ImageGallery.Client.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -52,6 +53,11 @@ builder.Services.AddAuthentication(options =>
             RoleClaimType = "role",
         };
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ImageCreatorPolicy", AuthorizationPolicies.ImageCreatorPolicy());
+});
 
 builder.Services.AddHttpContextAccessor();
 
