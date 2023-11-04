@@ -12,6 +12,7 @@ public static class Config
             new IdentityResources.OpenId(),
             new IdentityResources.Profile(),
             new IdentityResource("roles", "Your roles", new[] { "role" }),
+            new IdentityResource("country", "Your origin country", new[] { "country" }),
         };
 
     public static IEnumerable<ApiResource> ApiResources =>
@@ -55,6 +56,7 @@ public static class Config
                     IdentityServerConstants.StandardScopes.Profile,
                     "roles",
                     "imagegalleryapi.fullaccess",
+                    "country",
                 }
             }
         };

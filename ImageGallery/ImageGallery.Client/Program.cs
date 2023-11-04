@@ -36,6 +36,7 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("openid");
         options.Scope.Add("profile");
         options.Scope.Add("roles");
+        options.Scope.Add("country");
         options.Scope.Add("imagegalleryapi.fullaccess");
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
@@ -44,6 +45,7 @@ builder.Services.AddAuthentication(options =>
         options.ClaimActions.DeleteClaim("amr");
         options.ClaimActions.DeleteClaim("sid");
         options.ClaimActions.MapJsonKey("role", "role");
+        options.ClaimActions.MapJsonKey("country", "country");
         options.TokenValidationParameters = new TokenValidationParameters()
         {
             NameClaimType = "given_name",
