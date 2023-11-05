@@ -55,6 +55,7 @@ public class ImagesController : ControllerBase
 
     [HttpPost()]
     [Authorize(Policy = "ImageCreatorPolicy")]
+    [Authorize(Policy = "ClientApplicationCanWrite")]
     public async Task<ActionResult<Image>> CreateImage([FromBody] ImageForCreation imageForCreation)
     {
         // Automapper maps only the Title in our configuration

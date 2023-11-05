@@ -38,7 +38,8 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("profile");
         options.Scope.Add("roles");
         options.Scope.Add("country");
-        options.Scope.Add("imagegalleryapi.fullaccess");
+        options.Scope.Add("imagegalleryapi.read");
+        options.Scope.Add("imagegalleryapi.write");
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
         options.SaveTokens = true;

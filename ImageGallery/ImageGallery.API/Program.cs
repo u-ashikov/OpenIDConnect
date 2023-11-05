@@ -43,6 +43,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("ImageCreatorPolicy", AuthorizationPolicies.ImageCreatorPolicy());
+    options.AddPolicy("ClientApplicationCanWrite", authorizationPolicy =>
+    {
+        authorizationPolicy.RequireClaim("scope", "imagegalleryapi.write");
+    });
 });
 
 var app = builder.Build();
