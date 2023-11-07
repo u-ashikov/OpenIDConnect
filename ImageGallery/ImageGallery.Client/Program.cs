@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using ImageGallery.Authorization;
 using ImageGallery.Client.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -36,7 +37,9 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("openid");
         options.Scope.Add("profile");
         options.Scope.Add("roles");
-        options.Scope.Add("imagegalleryapi.fullaccess");
+        options.Scope.Add("country");
+        options.Scope.Add("imagegalleryapi.read");
+        options.Scope.Add("imagegalleryapi.write");
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
         options.SaveTokens = true;
@@ -44,12 +47,18 @@ builder.Services.AddAuthentication(options =>
         options.ClaimActions.DeleteClaim("amr");
         options.ClaimActions.DeleteClaim("sid");
         options.ClaimActions.MapJsonKey("role", "role");
+        options.ClaimActions.MapJsonKey("country", "country");
         options.TokenValidationParameters = new TokenValidationParameters()
         {
             NameClaimType = "given_name",
             RoleClaimType = "role",
         };
     });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ImageCreatorPolicy", AuthorizationPolicies.ImageCreatorPolicy());
+});
 
 builder.Services.AddHttpContextAccessor();
 

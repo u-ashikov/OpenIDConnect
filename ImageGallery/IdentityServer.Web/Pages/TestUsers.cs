@@ -1,12 +1,11 @@
 // Copyright (c) Duende Software. All rights reserved.
 // See LICENSE in the project root for license information.
 
+namespace IdentityServer.Web.Pages;
 
 using System.Security.Claims;
 using Duende.IdentityServer.Test;
 using IdentityModel;
-
-namespace IdentityServer.Web.Pages;
 
 public class TestUsers
 {
@@ -24,6 +23,7 @@ public class TestUsers
                     new Claim(JwtClaimTypes.GivenName, "David"),
                     new Claim(JwtClaimTypes.FamilyName, "Flagg"),
                     new Claim(JwtClaimTypes.Role, "FreeUser"),
+                    new Claim("country", "usa"),
                 }
             },
             new TestUser
@@ -36,7 +36,8 @@ public class TestUsers
                 {
                     new Claim(JwtClaimTypes.GivenName, "Emma"),
                     new Claim(JwtClaimTypes.FamilyName, "Flagg"),
-                    new Claim(JwtClaimTypes.Role, "ProUser")
+                    new Claim(JwtClaimTypes.Role, "ProUser"),
+                    new Claim("country", "bel"),
                 }
             }
         };

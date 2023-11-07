@@ -38,6 +38,7 @@ public class ImagesController : ControllerBase
     }
 
     [HttpGet("{id}", Name = "GetImage")]
+    [Authorize(Policy = "IsImageOwner")]
     public async Task<ActionResult<Image>> GetImage(Guid id)
     {          
         var ownerId = this.HttpContext.User.GetUserId();
@@ -54,6 +55,8 @@ public class ImagesController : ControllerBase
     }
 
     [HttpPost()]
+    [Authorize(Policy = "ImageCreatorPolicy")]
+    [Authorize(Policy = "ClientApplicationCanWrite")]
     public async Task<ActionResult<Image>> CreateImage([FromBody] ImageForCreation imageForCreation)
     {
         // Automapper maps only the Title in our configuration
@@ -95,6 +98,7 @@ public class ImagesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = "IsImageOwner")]
     public async Task<IActionResult> DeleteImage(Guid id)
     {            
         var ownerId = this.HttpContext.User.GetUserId();
@@ -113,6 +117,7 @@ public class ImagesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = "IsImageOwner")]
     public async Task<IActionResult> UpdateImage(Guid id, [FromBody] ImageForUpdate imageForUpdate)
     {
         var ownerId = this.HttpContext.User.GetUserId();
