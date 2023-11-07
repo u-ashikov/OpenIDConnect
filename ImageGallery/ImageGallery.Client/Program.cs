@@ -40,6 +40,8 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("country");
         options.Scope.Add("imagegalleryapi.read");
         options.Scope.Add("imagegalleryapi.write");
+        // This means receiving refresh tokens by the middleware.
+        options.Scope.Add("offline_access");
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
         options.SaveTokens = true;

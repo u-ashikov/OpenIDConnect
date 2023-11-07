@@ -100,11 +100,16 @@ public class GalleryController : Controller
 
     private async Task LogUserInformationAsync(CancellationToken cancellationToken)
     {
+        var auth = await this.HttpContext.AuthenticateAsync("Cookies");
+        var oldTokens = auth.Properties.GetTokens();
+        
         var idToken = await this.HttpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "id_token").ConfigureAwait(false);
         var accessToken = await this.HttpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "access_token").ConfigureAwait(false);
+        var refreshToken = await this.HttpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "refresh_token").ConfigureAwait(false);
             
         this._logger.LogInformation($"Identity Token: {idToken}");
         this._logger.LogInformation($"Access Token: {accessToken}");
+        this._logger.LogInformation($"Refresh Token: {refreshToken}");
 
         foreach (var userClaim in this.User.Claims)
             this._logger.LogInformation($"ClaimType: {userClaim.Type}, ClaimValue: {userClaim.Value}.");

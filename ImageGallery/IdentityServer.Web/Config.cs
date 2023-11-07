@@ -53,6 +53,8 @@ public static class Config
                 },
                 AllowedGrantTypes = GrantTypes.Code,
                 AccessTokenLifetime = 1200,
+                AllowOfflineAccess = true,
+                UpdateAccessTokenClaimsOnRefresh = true,
                 AllowedScopes =
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
