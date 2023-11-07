@@ -52,6 +52,7 @@ public static class Config
                     "https://localhost:7184/signout-callback-oidc"
                 },
                 AllowedGrantTypes = GrantTypes.Code,
+                AccessTokenLifetime = 1200,
                 AllowedScopes =
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
