@@ -63,13 +63,14 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<BearerAuthenticationHandler>();
 
 builder.Services.AddHttpClient<ImageGalleryApiHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ImageGalleryAPIRoot"]);
     client.DefaultRequestHeaders.Clear();
     client.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
-});
+}).AddHttpMessageHandler<BearerAuthenticationHandler>();
 
 var app = builder.Build();
 
