@@ -1,10 +1,8 @@
 ﻿namespace ImageGallery.Client.Infrastructure;
 
-using System.Net.Http.Headers;
 using System.Text.Json;
 using ImageGallery.Client.Common;
 using ImageGallery.Model;
-using Microsoft.AspNetCore.Authentication;
 
 public class ImageGalleryApiHttpClient
 {
@@ -20,7 +18,7 @@ public class ImageGalleryApiHttpClient
     public async Task<IEnumerable<Image>> GetAllAsync(CancellationToken cancellationToken)
     {
         var httpRequest = new HttpRequestMessage(HttpMethod.Get, WebConstants.ApiClient.GetAllImagesEndpoint);
-        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         await using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -34,7 +32,7 @@ public class ImageGalleryApiHttpClient
         var url = string.Format(WebConstants.ApiClient.ImageByIdEndpoint, id);
         var httpRequest = new HttpRequestMessage(HttpMethod.Get, url);
         
-        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         await using var responseContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -57,7 +55,7 @@ public class ImageGalleryApiHttpClient
                 "application/json")
         };
 
-        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
     }
 
@@ -74,7 +72,7 @@ public class ImageGalleryApiHttpClient
                 "application/json")
         };
 
-        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
     }
 
@@ -83,15 +81,7 @@ public class ImageGalleryApiHttpClient
         var url = string.Format(WebConstants.ApiClient.ImageByIdEndpoint, id);
         var httpRequest = new HttpRequestMessage(HttpMethod.Delete, url);
 
-        var response = await this.SendInternallyAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        var response = await this._httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-    }
-
-    private async Task<HttpResponseMessage> SendInternallyAsync(HttpRequestMessage httpRequest, CancellationToken cancellationToken)
-    {
-        var accessToken = await this._httpContextAccessor.HttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
-        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
-        return await this._httpClient.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -40,6 +40,8 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("country");
         options.Scope.Add("imagegalleryapi.read");
         options.Scope.Add("imagegalleryapi.write");
+        // This means receiving refresh tokens by the middleware.
+        options.Scope.Add("offline_access");
         options.CallbackPath = "/signin-oidc";
         options.SignedOutCallbackPath = "/signout-callback-oidc";
         options.SaveTokens = true;
@@ -61,13 +63,14 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<BearerAuthenticationHandler>();
 
 builder.Services.AddHttpClient<ImageGalleryApiHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["ImageGalleryAPIRoot"]);
     client.DefaultRequestHeaders.Clear();
     client.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
-});
+}).AddHttpMessageHandler<BearerAuthenticationHandler>();
 
 var app = builder.Build();
 
