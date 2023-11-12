@@ -1,7 +1,10 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Globalization;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace ImageGallery.Client.Infrastructure;
 
@@ -21,7 +24,7 @@ public class BearerAuthenticationHandler : DelegatingHandler
     /// <inheritdoc />
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var authenticationResult = await this._httpContextAccessor.HttpContext.AuthenticateAsync().ConfigureAwait(false);
+        var authenticationResult = await this._httpContextAccessor.HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme).ConfigureAwait(false);
         var allTokens = authenticationResult.Properties.GetTokens();
 
         var accessTokenExpiresAtToken = allTokens.FirstOrDefault(t => t.Name == "expires_at");
@@ -47,7 +50,24 @@ public class BearerAuthenticationHandler : DelegatingHandler
             connectTokenRequest.Content = new FormUrlEncodedContent(requestData);
             
             var result = await identityServerHttpClient.SendAsync(connectTokenRequest, cancellationToken).ConfigureAwait(false);
-            var response = await result.Content.ReadFromJsonAsync<RefreshTokenResponse>(cancellationToken: cancellationToken).ConfigureAwait(false);
+            result.EnsureSuccessStatusCode();
+            
+            var refreshTokenResponse = await result.Content.ReadFromJsonAsync<RefreshTokenResponse>(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var authenticationProperties = new List<AuthenticationToken>(capacity: 4);
+            authenticationProperties.Add(new AuthenticationToken() { Name = OpenIdConnectParameterNames.IdToken, Value = refreshTokenResponse.IdToken });
+            authenticationProperties.Add(new AuthenticationToken() { Name = OpenIdConnectParameterNames.AccessToken, Value = refreshTokenResponse.AccessToken });
+            authenticationProperties.Add(new AuthenticationToken() { Name = OpenIdConnectParameterNames.RefreshToken, Value = refreshTokenResponse.RefreshToken });
+            authenticationProperties.Add(new AuthenticationToken() { Name = "expires_at", Value = (DateTime.UtcNow + TimeSpan.FromSeconds(refreshTokenResponse.ExpiresIn)).
+                ToString("o", CultureInfo.InvariantCulture) });
+            
+            authenticationResult.Properties.StoreTokens(authenticationProperties);
+
+            await this._httpContextAccessor.HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                authenticationResult.Principal,
+                authenticationResult.Properties)
+                .ConfigureAwait(false);
         }
         
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
