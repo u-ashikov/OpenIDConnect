@@ -21,6 +21,7 @@ public static class Config
             new ApiResource("imagegalleryapi", "Image Gallery API", new[] { "role", "country" })
             {
                 Scopes = { "imagegalleryapi.fullaccess", "imagegalleryapi.read", "imagegalleryapi.write" },
+                ApiSecrets = { new Secret("secret".ToSha256())}
             },
         };
 
