@@ -20,7 +20,7 @@ public static class Config
         {
             new ApiResource("imagegalleryapi", "Image Gallery API", new[] { "role", "country" })
             {
-                Scopes = { "imagegalleryapi.fullaccess", "imagegalleryapi.read", "imagegalleryapi.write" }
+                Scopes = { "imagegalleryapi.fullaccess", "imagegalleryapi.read", "imagegalleryapi.write" },
             },
         };
 
@@ -39,6 +39,7 @@ public static class Config
             {
                 ClientId = "imagegallery",
                 ClientName = "Image Gallery",
+                AccessTokenType = AccessTokenType.Reference,
                 ClientSecrets = new List<Secret>()
                 {
                     new Secret("secret".ToSha256())
