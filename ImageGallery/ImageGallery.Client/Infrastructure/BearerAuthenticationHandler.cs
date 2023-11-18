@@ -1,7 +1,6 @@
 ﻿namespace ImageGallery.Client.Infrastructure;
 
 using ImageGallery.Client.Extensions;
-using ImageGallery.Client.Infrastructure.Models;
 using System.Globalization;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,12 +10,12 @@ using Microsoft.AspNetCore.Authentication;
 public class BearerAuthenticationHandler : DelegatingHandler
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IdentityServerHttpClient _identityServerHttpClient;
 
-    public BearerAuthenticationHandler(IHttpContextAccessor httpContextAccessor, IHttpClientFactory httpClientFactory)
+    public BearerAuthenticationHandler(IHttpContextAccessor httpContextAccessor, IdentityServerHttpClient identityServerHttpClient)
     {
         this._httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-        this._httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+        this._identityServerHttpClient = identityServerHttpClient ?? throw new ArgumentNullException(nameof(identityServerHttpClient));
     }
 
     /// <inheritdoc />
@@ -39,23 +38,7 @@ public class BearerAuthenticationHandler : DelegatingHandler
             return currentAccessToken;
         
         var refreshToken = allTokens.GetByName("refresh_token");
-        var identityServerHttpClient = this._httpClientFactory.CreateClient("IdentityServerHttpClient");
-        var connectTokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://localhost:5001/connect/token");
-
-        var requestData = new[]
-        {
-            new KeyValuePair<string, string>("client_id", "imagegallery"),
-            new KeyValuePair<string, string>("client_secret", "secret"),
-            new KeyValuePair<string, string>("grant_type", "refresh_token"),
-            new KeyValuePair<string, string>("refresh_token", refreshToken.Value),
-        };
-        
-        connectTokenRequest.Content = new FormUrlEncodedContent(requestData);
-            
-        var result = await identityServerHttpClient.SendAsync(connectTokenRequest, cancellationToken).ConfigureAwait(false);
-        result.EnsureSuccessStatusCode();
-        
-        var refreshTokenResponse = await result.Content.ReadFromJsonAsync<RefreshTokenResponse>(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var refreshTokenResponse = await this._identityServerHttpClient.RefreshAccessTokenAsync(refreshToken.Value, cancellationToken).ConfigureAwait(false);
 
         var authenticationProperties = new List<AuthenticationToken>(capacity: 4)
         {

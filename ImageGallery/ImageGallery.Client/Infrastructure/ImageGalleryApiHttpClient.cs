@@ -7,12 +7,10 @@ using ImageGallery.Model;
 public class ImageGalleryApiHttpClient
 {
     private readonly HttpClient _httpClient;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ImageGalleryApiHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
+    public ImageGalleryApiHttpClient(HttpClient httpClient)
     {
         this._httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        this._httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
     }
 
     public async Task<IEnumerable<Image>> GetAllAsync(CancellationToken cancellationToken)
