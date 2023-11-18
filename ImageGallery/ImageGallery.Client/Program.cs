@@ -72,6 +72,12 @@ builder.Services.AddHttpClient<ImageGalleryApiHttpClient>(client =>
     client.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
 }).AddHttpMessageHandler<BearerAuthenticationHandler>();
 
+builder.Services.AddHttpClient<IdentityServerHttpClient>(client =>
+{
+    client.DefaultRequestHeaders.Clear();
+    client.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
