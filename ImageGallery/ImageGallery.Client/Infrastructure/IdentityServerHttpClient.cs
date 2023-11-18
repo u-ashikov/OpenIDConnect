@@ -1,5 +1,6 @@
 ﻿namespace ImageGallery.Client.Infrastructure;
 
+using ImageGallery.Client.Infrastructure.Models;
 using Microsoft.AspNetCore.Authentication;
 
 public class IdentityServerHttpClient
@@ -28,5 +29,25 @@ public class IdentityServerHttpClient
 
         var result = await this._httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         result.EnsureSuccessStatusCode();
+    }
+
+    public async Task<RefreshTokenResponse> RefreshAccessTokenAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        var connectTokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://localhost:5001/connect/token");
+
+        var requestData = new[]
+        {
+            new KeyValuePair<string, string>("client_id", "imagegallery"),
+            new KeyValuePair<string, string>("client_secret", "secret"),
+            new KeyValuePair<string, string>("grant_type", "refresh_token"),
+            new KeyValuePair<string, string>("refresh_token", refreshToken),
+        };
+        
+        connectTokenRequest.Content = new FormUrlEncodedContent(requestData);
+            
+        var result = await this._httpClient.SendAsync(connectTokenRequest, cancellationToken).ConfigureAwait(false);
+        result.EnsureSuccessStatusCode();
+        
+        return await result.Content.ReadFromJsonAsync<RefreshTokenResponse>(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }
