@@ -7,7 +7,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Duende.IdentityServer" Version="6.3.5" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="7.0.14" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.14" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.14">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

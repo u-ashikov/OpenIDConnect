@@ -1,3 +1,6 @@
+using IdentityServer.Web.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace IdentityServer.Web;
 
 using IdentityServer.Web.Services;
@@ -9,6 +12,11 @@ internal static class HostingExtensions
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddRazorPages();
+
+        builder.Services.AddDbContext<IdentityDbContext>(options =>
+        {
+            options.UseSqlite(builder.Configuration.GetConnectionString("IdentityServerDb"));
+        });
 
         builder.Services.AddIdentityServer(options =>
             {
