@@ -1,5 +1,6 @@
 namespace IdentityServer.Web;
 
+using IdentityServer.Web.Services;
 using IdentityServer.Web.Pages;
 using Serilog;
 
@@ -19,6 +20,9 @@ internal static class HostingExtensions
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.Clients)
             .AddTestUsers(TestUsers.Users);
+
+        builder.Services.AddScoped<ILocalUserService, LocalUserService>();
+        builder.Services.AddScoped<ILocalUserProfileService, LocalUserProfileService>();
 
         return builder.Build();
     }
