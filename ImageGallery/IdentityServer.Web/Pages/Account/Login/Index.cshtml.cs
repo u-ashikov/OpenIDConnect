@@ -1,25 +1,27 @@
+
+namespace IdentityServer.Web.Pages.Account.Login;
+
 using Duende.IdentityServer;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
-using Duende.IdentityServer.Test;
+using Services;
+using IdentityServer.Web.Pages.Login;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace IdentityServer.Web.Pages.Login;
-
 [SecurityHeaders]
 [AllowAnonymous]
 public class Index : PageModel
 {
-    private readonly TestUserStore _users;
     private readonly IIdentityServerInteractionService _interaction;
     private readonly IEventService _events;
     private readonly IAuthenticationSchemeProvider _schemeProvider;
     private readonly IIdentityProviderStore _identityProviderStore;
+    private readonly ILocalUserService _localUserService;
 
     public ViewModel View { get; set; }
         
@@ -31,15 +33,13 @@ public class Index : PageModel
         IAuthenticationSchemeProvider schemeProvider,
         IIdentityProviderStore identityProviderStore,
         IEventService events,
-        TestUserStore users = null)
+        ILocalUserService localUserService)
     {
-        // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
-        _users = users ?? throw new Exception("Please call 'AddTestUsers(TestUsers.Users)' on the IIdentityServerBuilder in Startup or remove the TestUserStore from the AccountController.");
-            
-        _interaction = interaction;
-        _schemeProvider = schemeProvider;
-        _identityProviderStore = identityProviderStore;
-        _events = events;
+        this._interaction = interaction ?? throw new ArgumentNullException(nameof(interaction));
+        this._schemeProvider = schemeProvider ?? throw new ArgumentNullException(nameof(schemeProvider));
+        this._identityProviderStore = identityProviderStore ?? throw new ArgumentNullException(nameof(identityProviderStore));
+        this._events = events ?? throw new ArgumentNullException(nameof(events));
+        this._localUserService = localUserService ?? throw new ArgumentNullException(nameof(localUserService));
     }
 
     public async Task<IActionResult> OnGet(string returnUrl)
@@ -55,7 +55,7 @@ public class Index : PageModel
         return Page();
     }
         
-    public async Task<IActionResult> OnPost()
+    public async Task<IActionResult> OnPost(CancellationToken cancellationToken)
     {
         // check if we are in the context of an authorization request
         var context = await _interaction.GetAuthorizationContextAsync(Input.ReturnUrl);
@@ -80,20 +80,23 @@ public class Index : PageModel
 
                 return Redirect(Input.ReturnUrl);
             }
-            else
-            {
-                // since we don't have a valid context, then we just go back to the home page
-                return Redirect("~/");
-            }
+            
+            // since we don't have a valid context, then we just go back to the home page
+            return Redirect("~/");
         }
 
         if (ModelState.IsValid)
         {
-            // validate username/password against in-memory store
-            if (_users.ValidateCredentials(Input.Username, Input.Password))
+            var validCredentials = await this._localUserService.ValidateCredentialsAsync(Input.Username, Input.Password, cancellationToken).ConfigureAwait(false);
+            if (!validCredentials)
             {
-                var user = _users.FindByUsername(Input.Username);
-                await _events.RaiseAsync(new UserLoginSuccessEvent(user.Username, user.SubjectId, user.Username, clientId: context?.Client.ClientId));
+                await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId:context?.Client.ClientId));
+                ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
+            }
+            else
+            {
+                var existingUser = await this._localUserService.GetUserByUserNameAsync(Input.Username, cancellationToken).ConfigureAwait(false);
+                await _events.RaiseAsync(new UserLoginSuccessEvent(existingUser.UserName, existingUser.Subject, existingUser.UserName, clientId: context?.Client.ClientId));
 
                 // only set explicit expiration here if user chooses "remember me". 
                 // otherwise we rely upon expiration configured in cookie middleware.
@@ -108,9 +111,9 @@ public class Index : PageModel
                 };
 
                 // issue authentication cookie with subject ID and username
-                var isuser = new IdentityServerUser(user.SubjectId)
+                var isuser = new IdentityServerUser(existingUser.Subject)
                 {
-                    DisplayName = user.Username
+                    DisplayName = existingUser.UserName
                 };
 
                 await HttpContext.SignInAsync(isuser, props);
@@ -130,22 +133,14 @@ public class Index : PageModel
 
                 // request for a local page
                 if (Url.IsLocalUrl(Input.ReturnUrl))
-                {
                     return Redirect(Input.ReturnUrl);
-                }
-                else if (string.IsNullOrEmpty(Input.ReturnUrl))
-                {
+                
+                if (string.IsNullOrEmpty(Input.ReturnUrl))
                     return Redirect("~/");
-                }
-                else
-                {
-                    // user might have clicked on a malicious link - should be logged
-                    throw new Exception("invalid return URL");
-                }
+                
+                // user might have clicked on a malicious link - should be logged
+                throw new Exception("invalid return URL");
             }
-
-            await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId:context?.Client.ClientId));
-            ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
         }
 
         // something went wrong, show form with error
