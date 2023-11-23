@@ -1,10 +1,9 @@
-using IdentityServer.Web.Data;
-using Microsoft.EntityFrameworkCore;
-
 namespace IdentityServer.Web;
 
-using IdentityServer.Web.Services;
-using IdentityServer.Web.Pages;
+using Data;
+using Services;
+using Pages;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 internal static class HostingExtensions

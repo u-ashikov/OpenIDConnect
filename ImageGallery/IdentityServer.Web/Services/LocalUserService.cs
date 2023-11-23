@@ -18,12 +18,12 @@ public class LocalUserService : ILocalUserService
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             return Task.FromResult(false);
 
-        return this._identityDbContext.Users.AnyAsync(u => u.UserName == userName && u.Password == password, cancellationToken);
+        return this._identityDbContext.Users.AnyAsync(u => u.UserName == userName && u.Password == password && u.Active, cancellationToken);
     }
 
     public async Task<IEnumerable<UserClaim>> GetUserClaimsBySubjectAsync(string subject, CancellationToken cancellationToken)
     {
-        var existingUser = await this._identityDbContext.Users.Include(u => u.Claims).FirstOrDefaultAsync(u => u.Subject == subject, cancellationToken).ConfigureAwait(false);
+        var existingUser = await this._identityDbContext.Users.Include(u => u.Claims).FirstOrDefaultAsync(u => u.Subject == subject && u.Active, cancellationToken).ConfigureAwait(false);
 
         if (existingUser is null)
             return Enumerable.Empty<UserClaim>();
@@ -36,7 +36,7 @@ public class LocalUserService : ILocalUserService
         if (string.IsNullOrWhiteSpace(userName))
             return Task.FromResult((User)null);
 
-        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName, cancellationToken);
+        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName && u.Active, cancellationToken);
     }
 
     public Task<User> GetUserBySubjectAsync(string subject, CancellationToken cancellationToken)
@@ -44,7 +44,7 @@ public class LocalUserService : ILocalUserService
         if (string.IsNullOrWhiteSpace(subject))
             return Task.FromResult((User)null);
 
-        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.Subject == subject, cancellationToken);
+        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.Subject == subject && u.Active, cancellationToken);
     }
 
     public void AddUser(User userToAdd)
