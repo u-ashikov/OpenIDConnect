@@ -4,17 +4,17 @@ using IdentityServer.Web.Data.Models;
 
 public interface ILocalUserService
 {
-    Task<bool> ValidateCredentialsAsync(string userName, string password);
+    Task<bool> ValidateCredentialsAsync(string userName, string password, CancellationToken cancellationToken);
 
-    Task<IEnumerable<UserClaim>> GetUserClaimsBySubjectAsync(string subject);
+    Task<IEnumerable<UserClaim>> GetUserClaimsBySubjectAsync(string subject, CancellationToken cancellationToken);
 
-    Task<User> GetUserByUserNameAsync(string userName);
+    Task<User> GetUserByUserNameAsync(string userName, CancellationToken cancellationToken);
 
-    Task<User> GetUserBySubjectAsync(string subject);
+    Task<User> GetUserBySubjectAsync(string subject, CancellationToken cancellationToken);
 
     void AddUser(User userToAdd);
 
-    Task<bool> IsUserActive(string subject);
+    Task<bool> IsUserActive(string subject, CancellationToken cancellationToken);
 
-    Task<bool> SaveChangesAsync();
+    Task<bool> SaveChangesAsync(CancellationToken cancellationToken);
 }
