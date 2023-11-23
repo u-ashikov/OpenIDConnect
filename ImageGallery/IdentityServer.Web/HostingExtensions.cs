@@ -1,6 +1,8 @@
 namespace IdentityServer.Web;
 
-using IdentityServer.Web.Pages;
+using Data;
+using Services;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 internal static class HostingExtensions
@@ -9,16 +11,24 @@ internal static class HostingExtensions
     {
         builder.Services.AddRazorPages();
 
+        builder.Services.AddDbContext<IdentityDbContext>(options =>
+        {
+            options.UseSqlite(builder.Configuration.GetConnectionString("IdentityServerDb"));
+        });
+
         builder.Services.AddIdentityServer(options =>
             {
                 // https://docs.duendesoftware.com/identityserver/v6/fundamentals/resources/api_scopes#authorization-based-on-scopes
                 options.EmitStaticAudienceClaim = true;
             })
+            .AddProfileService<LocalUserProfileService>()
             .AddInMemoryIdentityResources(Config.IdentityResources)
             .AddInMemoryApiResources(Config.ApiResources)
             .AddInMemoryApiScopes(Config.ApiScopes)
-            .AddInMemoryClients(Config.Clients)
-            .AddTestUsers(TestUsers.Users);
+            .AddInMemoryClients(Config.Clients);
+
+        builder.Services.AddScoped<ILocalUserService, LocalUserService>();
+        builder.Services.AddScoped<ILocalUserProfileService, LocalUserProfileService>();
 
         return builder.Build();
     }
