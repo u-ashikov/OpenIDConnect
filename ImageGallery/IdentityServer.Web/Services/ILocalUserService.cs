@@ -12,7 +12,7 @@ public interface ILocalUserService
 
     Task<User> GetUserBySubjectAsync(string subject, CancellationToken cancellationToken);
 
-    void AddUser(User userToAdd);
+    Task AddUser(User userToAdd, CancellationToken cancellationToken);
 
     Task<bool> IsUserActive(string subject, CancellationToken cancellationToken);
 

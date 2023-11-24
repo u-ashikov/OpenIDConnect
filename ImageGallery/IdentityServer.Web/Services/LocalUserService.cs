@@ -47,10 +47,14 @@ public class LocalUserService : ILocalUserService
         return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.Subject == subject && u.Active, cancellationToken);
     }
 
-    public void AddUser(User userToAdd)
+    public async Task AddUser(User userToAdd, CancellationToken cancellationToken)
     {
         if (userToAdd is null)
             return;
+        
+        var userAlreadyExists = await this._identityDbContext.Users.AnyAsync(u => u.UserName == userToAdd.UserName, cancellationToken).ConfigureAwait(false);
+        if (userAlreadyExists)
+            throw new Exception("User with that username already exists.");
 
         this._identityDbContext.Users.Add(userToAdd);
     }
