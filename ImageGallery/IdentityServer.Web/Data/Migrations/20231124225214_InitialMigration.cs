@@ -21,6 +21,7 @@ namespace IdentityServer.Web.Data.Migrations
                     Subject = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
                     Password = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Active = table.Column<bool>(type: "INTEGER", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
                 },
@@ -52,11 +53,11 @@ namespace IdentityServer.Web.Data.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "Active", "ConcurrencyStamp", "Password", "Subject", "UserName" },
+                columns: new[] { "Id", "Active", "ConcurrencyStamp", "Email", "Password", "Subject", "UserName" },
                 values: new object[,]
                 {
-                    { new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), true, "790c2f0e-5208-48fa-a3fa-0b31b70311dd", "password", "d860efca-22d9-47fd-8249-791ba61b07c7", "David" },
-                    { new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), true, "bbfdc04d-9776-4025-bc7a-22dd4b6e93dd", "password", "b7539694-97e7-4dfe-84da-b4256e1ff5c7", "Emma" }
+                    { new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), true, "4389ced4-d4d1-47d5-8312-b3866afa658e", "david@gmail.com", "password", "d860efca-22d9-47fd-8249-791ba61b07c7", "David" },
+                    { new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), true, "b31cc52b-9a4e-40aa-b32b-5b328a910943", "emma@gmail.com", "password", "b7539694-97e7-4dfe-84da-b4256e1ff5c7", "Emma" }
                 });
 
             migrationBuilder.InsertData(
@@ -64,20 +65,26 @@ namespace IdentityServer.Web.Data.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Type", "UserId", "Value" },
                 values: new object[,]
                 {
-                    { new Guid("14245be3-617e-4993-bef7-571a91a9d5b8"), "594903ed-0584-479f-af39-1f9903c17924", "family_name", new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), "Flagg" },
-                    { new Guid("36fb7575-6e7f-4cd5-b26f-7627d34cf1be"), "806da3ec-e9b6-445a-99e2-1c4ce2e83b40", "country", new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), "usa" },
-                    { new Guid("47f7e066-b487-4f60-90bd-fb5d610cd3cb"), "dd4644f4-c244-447b-8e20-6e87ece14c50", "given_name", new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), "Emma" },
-                    { new Guid("5e1a4870-b506-422e-8c80-46c751f7fa5a"), "4519c8c7-5460-45a7-ae44-c6129432f896", "role", new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), "FreeUser" },
-                    { new Guid("82a4b913-c647-40c1-86ed-27dcdcdc2994"), "d7e68d4b-d658-43d5-9cb5-d38dd7c2180e", "given_name", new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), "David" },
-                    { new Guid("8da197e2-c7c9-4c1a-992e-0636ea427666"), "0ed10289-b881-4f2c-b783-3868a9597988", "family_name", new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), "Flagg" },
-                    { new Guid("b379ee7d-7cc7-4d39-96ea-dc53a53d808e"), "9fab8657-b44e-4027-abb5-044cfb67a709", "role", new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), "ProUser" },
-                    { new Guid("bc760338-f156-414d-87e0-62ebe8ac3331"), "eb499be5-e662-4a2b-96c8-92890b0d81e7", "country", new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), "bel" }
+                    { new Guid("1c766551-7716-4741-9955-b8a8914c39a9"), "4c8854e6-5e04-4177-acc7-5446cc14d6de", "given_name", new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), "Emma" },
+                    { new Guid("4baf61d0-d6f1-446f-b4eb-38a43af06be9"), "3818df3e-1118-456f-8130-3f5264f0537f", "family_name", new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), "Flagg" },
+                    { new Guid("8f2557ff-a3d4-43b6-8e9f-4fab396d476f"), "8e1cb145-a9d5-4080-b47a-16b6850d0e70", "role", new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), "FreeUser" },
+                    { new Guid("9ec94538-29a8-4b03-8cc9-aca97548a895"), "1b23cdc9-56c9-46e8-a873-9c76a50334a1", "role", new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), "ProUser" },
+                    { new Guid("9edb9c91-745d-4602-8c5b-19538d969600"), "accaaf16-230e-48c9-99f9-32982901d8a0", "country", new Guid("96053525-f4a5-47ee-855e-0ea77fa6c55a"), "bel" },
+                    { new Guid("d8222c4e-fb18-4116-99fc-00f9e8470ddc"), "5a193b1d-d67f-4a97-8002-430375697e03", "country", new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), "usa" },
+                    { new Guid("dd239b7d-106d-4bf5-b9a4-2b516c6e45dc"), "71827c3d-46a4-4aa1-956b-7718fc20fad0", "family_name", new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), "Flagg" },
+                    { new Guid("e91e3480-33dc-4e4d-893e-a644c9ab18f7"), "02b7718d-946b-4349-9507-80149bcc32fb", "given_name", new Guid("13229d33-99e0-41b3-b18d-4f72127e3971"), "David" }
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserClaims_UserId",
                 table: "UserClaims",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Subject",

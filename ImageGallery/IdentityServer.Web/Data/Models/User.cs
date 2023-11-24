@@ -16,6 +16,10 @@ public class User : IConcurrencyAware
 
     [MaxLength(200)]
     public string Password { get; set; }
+    
+    [MaxLength(200)]
+    [Required]
+    public string Email { get; set; }
 
     [Required]
     public bool Active { get; set; }
