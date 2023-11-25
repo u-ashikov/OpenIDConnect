@@ -37,10 +37,11 @@ public class IndexModel : PageModel
         if (!this.ModelState.IsValid)
             return this.Page();
 
-        var userEntity = new Data.Models.User()
+        var userEntity = new User()
         {
             UserName = this.InputModel.UserName,
             Password = this.InputModel.Password,
+            Email = this.InputModel.Email,
             Active = true,
         };
         

@@ -1,3 +1,6 @@
+using IdentityServer.Web.Data.Models;
+using Microsoft.AspNetCore.Identity;
+
 namespace IdentityServer.Web;
 
 using Data;
@@ -27,6 +30,7 @@ internal static class HostingExtensions
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.Clients);
 
+        builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<ILocalUserService, LocalUserService>();
         builder.Services.AddScoped<ILocalUserProfileService, LocalUserProfileService>();
 
