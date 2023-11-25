@@ -1,5 +1,6 @@
 ﻿namespace IdentityServer.Web.Services;
 
+using Microsoft.AspNetCore.Identity;
 using Data;
 using Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -7,18 +8,25 @@ using Microsoft.EntityFrameworkCore;
 public class LocalUserService : ILocalUserService
 {
     private readonly IdentityDbContext _identityDbContext;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
-    public LocalUserService(IdentityDbContext identityDbContext)
+    public LocalUserService(IdentityDbContext identityDbContext, IPasswordHasher<User> passwordHasher)
     {
         this._identityDbContext = identityDbContext ?? throw new ArgumentNullException(nameof(identityDbContext));
+        this._passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
     }
 
-    public Task<bool> ValidateCredentialsAsync(string userName, string password, CancellationToken cancellationToken)
+    public async Task<bool> ValidateCredentialsAsync(string userName, string password, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
-            return Task.FromResult(false);
+            return false;
 
-        return this._identityDbContext.Users.AnyAsync(u => u.UserName == userName && u.Password == password && u.Active, cancellationToken);
+        var existingUser = await this._identityDbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName, cancellationToken).ConfigureAwait(false);
+        if (existingUser is null)
+            return false;
+        
+        var verifyHashedPassword = this._passwordHasher.VerifyHashedPassword(existingUser, existingUser.Password, password);
+        return verifyHashedPassword == PasswordVerificationResult.Success;
     }
 
     public async Task<IEnumerable<UserClaim>> GetUserClaimsBySubjectAsync(string subject, CancellationToken cancellationToken)
@@ -55,6 +63,8 @@ public class LocalUserService : ILocalUserService
         var userAlreadyExists = await this._identityDbContext.Users.AnyAsync(u => u.UserName == userToAdd.UserName, cancellationToken).ConfigureAwait(false);
         if (userAlreadyExists)
             throw new Exception("User with that username already exists.");
+
+        userToAdd.Password = this._passwordHasher.HashPassword(userToAdd, userToAdd.Password);
 
         this._identityDbContext.Users.Add(userToAdd);
     }
