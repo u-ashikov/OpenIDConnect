@@ -44,7 +44,7 @@ public class LocalUserService : ILocalUserService
         if (string.IsNullOrWhiteSpace(userName))
             return Task.FromResult((User)null);
 
-        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName && u.Active, cancellationToken);
+        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName, cancellationToken);
     }
 
     public Task<User> GetUserBySubjectAsync(string subject, CancellationToken cancellationToken)
@@ -76,6 +76,26 @@ public class LocalUserService : ILocalUserService
 
         var existingUser = await this.GetUserBySubjectAsync(subject, cancellationToken).ConfigureAwait(false);
         return existingUser is not null && existingUser.Active;
+    }
+
+    public async Task<bool> ActivateUserAsync(string userName, string activationCode, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(activationCode))
+            return false;
+
+        var existingUser = await this.GetUserByUserNameAsync(userName, cancellationToken).ConfigureAwait(false);
+        if (existingUser is null)
+            return false;
+
+        if (DateTime.UtcNow > existingUser.ActivationCodeExpirationDate || existingUser.ActivationCode != activationCode)
+            return false;
+
+        existingUser.ActivationCode = null;
+        existingUser.Active = true;
+
+        await this.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return true;
     }
 
     public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)

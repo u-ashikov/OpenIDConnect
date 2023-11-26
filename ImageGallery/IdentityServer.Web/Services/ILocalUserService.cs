@@ -16,5 +16,7 @@ public interface ILocalUserService
 
     Task<bool> IsUserActive(string subject, CancellationToken cancellationToken);
 
+    Task<bool> ActivateUserAsync(string userName, string activationCode, CancellationToken cancellationToken);
+
     Task<bool> SaveChangesAsync(CancellationToken cancellationToken);
 }

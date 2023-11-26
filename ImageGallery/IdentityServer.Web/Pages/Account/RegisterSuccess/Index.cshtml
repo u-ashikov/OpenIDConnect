@@ -1,0 +1,12 @@
+﻿@page
+@model IdentityServer.Web.Pages.Account.RegisterSuccess.IndexModel
+
+<div id="success-registration">
+    You have successfully registered the account for user: @Model.RegisteredUser. Please, click the button to activate your account:
+    <form method="post" asp-page="/Account/RegisterSuccess/Index">
+        <input asp-for="ActivationCode" value="@Model.ActivationCode" type="hidden"/>
+        <input asp-for="RegisteredUser" value="@Model.RegisteredUser" type="hidden"/>
+        <input asp-for="ReturnUrl" value="@Model.ReturnUrl" type="hidden"/>
+        <input class="btn btn-success" type="submit" value="Activate"/>
+    </form>
+</div>
