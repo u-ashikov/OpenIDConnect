@@ -23,6 +23,11 @@ public class User : IConcurrencyAware
 
     [Required]
     public bool Active { get; set; }
+    
+    [MaxLength(200)]
+    public string ActivationCode { get; set; }
+    
+    public DateTime ActivationCodeExpirationDate { get; set; }
 
     [ConcurrencyCheck]
     public string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
