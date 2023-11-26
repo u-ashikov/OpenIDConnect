@@ -1,10 +1,9 @@
 ﻿namespace IdentityServer.Web.Pages.Account.Register;
 
-using Duende.IdentityServer;
-using Duende.IdentityServer.Services;
+using System.Security.Cryptography;
 using IdentityModel;
-using IdentityServer.Web.Data.Models;
-using IdentityServer.Web.Services;
+using Data.Models;
+using Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,12 +13,10 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 public class IndexModel : PageModel
 {
     private readonly ILocalUserService _localUserService;
-    private readonly IIdentityServerInteractionService _identityServerInteractionService;
 
-    public IndexModel(ILocalUserService localUserService, IIdentityServerInteractionService identityServerInteractionService)
+    public IndexModel(ILocalUserService localUserService)
     {
         this._localUserService = localUserService ?? throw new ArgumentNullException(nameof(localUserService));
-        this._identityServerInteractionService = identityServerInteractionService ?? throw new ArgumentNullException(nameof(identityServerInteractionService));
     }
 
     [BindProperty]
@@ -41,8 +38,10 @@ public class IndexModel : PageModel
         {
             UserName = this.InputModel.UserName,
             Password = this.InputModel.Password,
+            Subject = this.InputModel.UserName,
             Email = this.InputModel.Email,
-            Active = true,
+            ActivationCode = Convert.ToBase64String(RandomNumberGenerator.GetBytes(128)),
+            ActivationCodeExpirationDate = DateTime.UtcNow.AddHours(1),
         };
         
         userEntity.Claims.Add(new UserClaim()
@@ -65,13 +64,8 @@ public class IndexModel : PageModel
 
         await this._localUserService.AddUser(userEntity, cancellationToken).ConfigureAwait(false);
         await this._localUserService.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        await this.HttpContext.SignInAsync(new IdentityServerUser(this.InputModel.UserName)).ConfigureAwait(false);
-
-        if (this._identityServerInteractionService.IsValidReturnUrl(this.InputModel.ReturnUrl))
-            return this.Redirect(this.InputModel.ReturnUrl);
-
-        return this.Page();
+        
+        return this.RedirectToPage("/Account/RegisterSuccess/Index", new { registeredUser = userEntity.UserName, activationCode = userEntity.ActivationCode, returnUrl });
     }
 
     private void PrepareInputModel(string returnUrl)
