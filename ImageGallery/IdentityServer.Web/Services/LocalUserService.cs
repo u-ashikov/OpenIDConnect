@@ -1,5 +1,6 @@
 ﻿namespace IdentityServer.Web.Services;
 
+using Microsoft.AspNetCore.Identity;
 using Data;
 using Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -7,18 +8,25 @@ using Microsoft.EntityFrameworkCore;
 public class LocalUserService : ILocalUserService
 {
     private readonly IdentityDbContext _identityDbContext;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
-    public LocalUserService(IdentityDbContext identityDbContext)
+    public LocalUserService(IdentityDbContext identityDbContext, IPasswordHasher<User> passwordHasher)
     {
         this._identityDbContext = identityDbContext ?? throw new ArgumentNullException(nameof(identityDbContext));
+        this._passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
     }
 
-    public Task<bool> ValidateCredentialsAsync(string userName, string password, CancellationToken cancellationToken)
+    public async Task<bool> ValidateCredentialsAsync(string userName, string password, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
-            return Task.FromResult(false);
+            return false;
 
-        return this._identityDbContext.Users.AnyAsync(u => u.UserName == userName && u.Password == password && u.Active, cancellationToken);
+        var existingUser = await this._identityDbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName, cancellationToken).ConfigureAwait(false);
+        if (existingUser is null)
+            return false;
+        
+        var verifyHashedPassword = this._passwordHasher.VerifyHashedPassword(existingUser, existingUser.Password, password);
+        return verifyHashedPassword == PasswordVerificationResult.Success;
     }
 
     public async Task<IEnumerable<UserClaim>> GetUserClaimsBySubjectAsync(string subject, CancellationToken cancellationToken)
@@ -36,7 +44,7 @@ public class LocalUserService : ILocalUserService
         if (string.IsNullOrWhiteSpace(userName))
             return Task.FromResult((User)null);
 
-        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName && u.Active, cancellationToken);
+        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.UserName == userName, cancellationToken);
     }
 
     public Task<User> GetUserBySubjectAsync(string subject, CancellationToken cancellationToken)
@@ -47,10 +55,16 @@ public class LocalUserService : ILocalUserService
         return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.Subject == subject && u.Active, cancellationToken);
     }
 
-    public void AddUser(User userToAdd)
+    public async Task AddUser(User userToAdd, CancellationToken cancellationToken)
     {
         if (userToAdd is null)
             return;
+        
+        var userAlreadyExists = await this._identityDbContext.Users.AnyAsync(u => u.UserName == userToAdd.UserName, cancellationToken).ConfigureAwait(false);
+        if (userAlreadyExists)
+            throw new Exception("User with that username already exists.");
+
+        userToAdd.Password = this._passwordHasher.HashPassword(userToAdd, userToAdd.Password);
 
         this._identityDbContext.Users.Add(userToAdd);
     }
@@ -62,6 +76,26 @@ public class LocalUserService : ILocalUserService
 
         var existingUser = await this.GetUserBySubjectAsync(subject, cancellationToken).ConfigureAwait(false);
         return existingUser is not null && existingUser.Active;
+    }
+
+    public async Task<bool> ActivateUserAsync(string userName, string activationCode, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(activationCode))
+            return false;
+
+        var existingUser = await this.GetUserByUserNameAsync(userName, cancellationToken).ConfigureAwait(false);
+        if (existingUser is null)
+            return false;
+
+        if (DateTime.UtcNow > existingUser.ActivationCodeExpirationDate || existingUser.ActivationCode != activationCode)
+            return false;
+
+        existingUser.ActivationCode = null;
+        existingUser.Active = true;
+
+        await this.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return true;
     }
 
     public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)

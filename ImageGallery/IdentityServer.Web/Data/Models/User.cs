@@ -16,9 +16,18 @@ public class User : IConcurrencyAware
 
     [MaxLength(200)]
     public string Password { get; set; }
+    
+    [MaxLength(200)]
+    [Required]
+    public string Email { get; set; }
 
     [Required]
     public bool Active { get; set; }
+    
+    [MaxLength(200)]
+    public string ActivationCode { get; set; }
+    
+    public DateTime ActivationCodeExpirationDate { get; set; }
 
     [ConcurrencyCheck]
     public string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
