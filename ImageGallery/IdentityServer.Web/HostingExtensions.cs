@@ -1,8 +1,7 @@
-using IdentityServer.Web.Data.Models;
-using Microsoft.AspNetCore.Identity;
-
 namespace IdentityServer.Web;
 
+using IdentityServer.Web.Data.Models;
+using Microsoft.AspNetCore.Identity;
 using Data;
 using Services;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +11,18 @@ internal static class HostingExtensions
 {
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
+        builder.Services.Configure<IISOptions>(iis =>
+        {
+            iis.AuthenticationDisplayName = "Windows";
+            iis.AutomaticAuthentication = false;
+        });
+        
+        builder.Services.Configure<IISServerOptions>(iis =>
+        {
+            iis.AuthenticationDisplayName = "Windows";
+            iis.AutomaticAuthentication = false;
+        });
+        
         builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
         builder.Services.AddDbContext<IdentityDbContext>(options =>
