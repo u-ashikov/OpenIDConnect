@@ -34,8 +34,8 @@ internal static class HostingExtensions
         builder.Services.AddAuthentication()
             .AddFacebook("Facebook", options =>
             {
-                options.AppId = "1135651674485124";
-                options.AppSecret = "ccaaa7e7a07afa0963e57b039bdb5ca0";
+                options.AppId = "1342182150003035";
+                options.AppSecret = "bbaa5c12dbda4dd9edab087a94a1c4be";
                 options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
             });
 
