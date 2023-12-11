@@ -50,6 +50,22 @@ internal static class HostingExtensions
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.Clients);
 
+        builder.Services
+            .AddAuthentication()
+            .AddOpenIdConnect("AAD","Azure Active Directory", options =>
+            {
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                options.Authority = "https://login.microsoftonline.com/4502e197-d331-412f-91c2-bab9c0f5b711/v2.0";
+                options.ClientId = "f826d3b9-7c6c-433b-b6ef-2deb2864aca9";
+                options.ClientSecret = "jcN8Q~27lEfKUjKDb~tJe8ZF1XrN5rUtWLFaXc4-";
+                options.ResponseType = "code";
+                options.Scope.Add("email");
+                options.Scope.Add("offline_access");
+                options.CallbackPath = new PathString("/signin-aad/");
+                options.SignedOutCallbackPath = new PathString("/signout-aad/");
+                options.SaveTokens = true;
+            });
+
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<ILocalUserService, LocalUserService>();
         builder.Services.AddScoped<ILocalUserProfileService, LocalUserProfileService>();

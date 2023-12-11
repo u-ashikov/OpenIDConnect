@@ -78,14 +78,14 @@ public class Callback : PageModel
         CaptureExternalLoginContext(result, additionalLocalClaims, localSignInProps);
             
         // issue authentication cookie for user
-        var isuser = new IdentityServerUser(providerUserId)
+        var user = new IdentityServerUser(providerUserId)
         {
             DisplayName = providerUserId,
             IdentityProvider = provider,
             AdditionalClaims = additionalLocalClaims
         };
 
-        await HttpContext.SignInAsync(isuser, localSignInProps);
+        await HttpContext.SignInAsync(user, localSignInProps);
 
         // delete temporary cookie used during external authentication
         await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
