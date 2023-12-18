@@ -1,4 +1,6 @@
-﻿namespace IdentityServer.Web.Services;
+﻿using System.Security.Claims;
+
+namespace IdentityServer.Web.Services;
 
 using IdentityServer.Web.Data.Models;
 
@@ -18,7 +20,9 @@ public interface ILocalUserService
 
     Task<bool> ActivateUserAsync(string userName, string activationCode, CancellationToken cancellationToken);
 
-    Task<User> FindByExternalProvider(string provider, string providerUserId, CancellationToken cancellationToken);
+    Task<User> FindByExternalProvider(string provider, string providerIdentityKey, CancellationToken cancellationToken);
+    
+    User AutoProvisionUser(string provider, string providerIdentityKey, IEnumerable<Claim> claims);
 
     Task<bool> SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -1,4 +1,6 @@
-﻿namespace IdentityServer.Web.Services;
+﻿using System.Security.Claims;
+
+namespace IdentityServer.Web.Services;
 
 using Microsoft.AspNetCore.Identity;
 using Data;
@@ -98,18 +100,54 @@ public class LocalUserService : ILocalUserService
         return true;
     }
 
-    public async Task<User> FindByExternalProvider(string provider, string providerUserId, CancellationToken cancellationToken)
+    public async Task<User> FindByExternalProvider(string provider, string providerIdentityKey, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(provider))
             throw new InvalidOperationException();
 
-        if (string.IsNullOrWhiteSpace(providerUserId))
+        if (string.IsNullOrWhiteSpace(providerIdentityKey))
             throw new InvalidCastException();
 
         var existingUserLogin = await this._identityDbContext.UserLogins.Include(ul => ul.User)
-            .FirstOrDefaultAsync(ul => ul.Provider == provider && ul.ProviderIdentityKey == providerUserId, cancellationToken);
+            .FirstOrDefaultAsync(ul => ul.Provider == provider && ul.ProviderIdentityKey == providerIdentityKey, cancellationToken);
 
         return existingUserLogin?.User;
+    }
+
+    public User AutoProvisionUser(string provider, string providerIdentityKey, IEnumerable<Claim> claims)
+    {
+        if (string.IsNullOrWhiteSpace(provider))
+            throw new InvalidOperationException();
+
+        if (string.IsNullOrWhiteSpace(providerIdentityKey))
+            throw new InvalidCastException();
+
+        if (claims is null)
+            throw new InvalidCastException();
+
+        var user = new User()
+        {
+            Active = true,
+            Subject = Guid.NewGuid().ToString(),
+        };
+
+        foreach (var claim in claims)
+        {
+            user.Claims.Add(new UserClaim()
+            {
+                Type = claim.Type,
+                Value = claim.Value,
+            });
+        }
+        
+        user.Logins.Add(new UserLogin()
+        {
+            Provider = provider,
+            ProviderIdentityKey = providerIdentityKey,
+        });
+
+        this._identityDbContext.Users.Add(user);
+        return user;
     }
 
     public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)
