@@ -18,7 +18,7 @@ public class IdentityServerHttpClient
     {
         var accessToken = await this._httpContextAccessor.HttpContext.GetTokenAsync("access_token").ConfigureAwait(false);
         
-        var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:5001/connect/revocation");
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:44300/connect/revocation");
         request.Content = new FormUrlEncodedContent(new[]
         {
             new KeyValuePair<string, string>("token", accessToken),
@@ -33,7 +33,7 @@ public class IdentityServerHttpClient
 
     public async Task<RefreshTokenResponse> RefreshAccessTokenAsync(string refreshToken, CancellationToken cancellationToken)
     {
-        var connectTokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://localhost:5001/connect/token");
+        var connectTokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://localhost:44300/connect/token");
 
         var requestData = new[]
         {

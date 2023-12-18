@@ -32,7 +32,7 @@ builder.Services.AddAuthentication(options =>
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.ClientId = "imagegallery";
         options.ClientSecret = "secret";
-        options.Authority = "https://localhost:5001";
+        options.Authority = "https://localhost:44300";
         options.ResponseType = "code";
         options.Scope.Add("openid");
         options.Scope.Add("profile");
