@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using IdentityModel;
 
 namespace IdentityServer.Web.Services;
 
@@ -127,6 +128,7 @@ public class LocalUserService : ILocalUserService
 
         var user = new User()
         {
+            Email = claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Email).Value,
             Active = true,
             Subject = Guid.NewGuid().ToString(),
         };
