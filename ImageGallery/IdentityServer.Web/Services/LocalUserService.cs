@@ -98,6 +98,20 @@ public class LocalUserService : ILocalUserService
         return true;
     }
 
+    public async Task<User> FindByExternalProvider(string provider, string providerUserId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(provider))
+            throw new InvalidOperationException();
+
+        if (string.IsNullOrWhiteSpace(providerUserId))
+            throw new InvalidCastException();
+
+        var existingUserLogin = await this._identityDbContext.UserLogins.Include(ul => ul.User)
+            .FirstOrDefaultAsync(ul => ul.Provider == provider && ul.ProviderIdentityKey == providerUserId, cancellationToken);
+
+        return existingUserLogin?.User;
+    }
+
     public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)
     {
         var saveChanges = await this._identityDbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

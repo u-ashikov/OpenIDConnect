@@ -18,5 +18,7 @@ public interface ILocalUserService
 
     Task<bool> ActivateUserAsync(string userName, string activationCode, CancellationToken cancellationToken);
 
+    Task<User> FindByExternalProvider(string provider, string providerUserId, CancellationToken cancellationToken);
+
     Task<bool> SaveChangesAsync(CancellationToken cancellationToken);
 }
