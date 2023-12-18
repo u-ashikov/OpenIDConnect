@@ -1,3 +1,5 @@
+namespace IdentityServer.Web.Pages.ExternalLogin;
+
 using System.Security.Claims;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Events;
@@ -7,8 +9,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-
-namespace IdentityServer.Web.Pages.ExternalLogin;
 
 [AllowAnonymous]
 [SecurityHeaders]
