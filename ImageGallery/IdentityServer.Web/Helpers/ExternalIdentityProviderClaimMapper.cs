@@ -9,7 +9,8 @@ public class ExternalIdentityProviderClaimMapper
 
     public ExternalIdentityProviderClaimMapper()
     {
-        this._externalIdentityProviderClaimMappings.Add("Facebook", this.MapFacebookClaim);
+        this._externalIdentityProviderClaimMappings.Add("Facebook", MapFacebookClaim);
+        this._externalIdentityProviderClaimMappings.Add("AAD", MapAzureAdClaim);
     }
 
     public ICollection<Claim> MapClaims(string authenticationScheme, IEnumerable<Claim> inputClaims)
@@ -35,11 +36,22 @@ public class ExternalIdentityProviderClaimMapper
         return outputClaims;
     }
 
-    private string MapFacebookClaim(string inputClaim)
+    private static string MapFacebookClaim(string inputClaim)
     {
         return inputClaim switch
         {
             "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname" => JwtClaimTypes.GivenName,
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" => JwtClaimTypes.FamilyName,
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" => JwtClaimTypes.Email,
+            _ => string.Empty
+        };
+    }
+
+    private static string MapAzureAdClaim(string inputClaim)
+    {
+        return inputClaim switch
+        {
+            "name" => JwtClaimTypes.GivenName,
             "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname" => JwtClaimTypes.FamilyName,
             "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" => JwtClaimTypes.Email,
             _ => string.Empty
