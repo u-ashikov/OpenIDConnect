@@ -1,3 +1,5 @@
+using IdentityServer.Web.Helpers;
+
 namespace IdentityServer.Web;
 
 using Duende.IdentityServer;
@@ -69,6 +71,7 @@ internal static class HostingExtensions
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         builder.Services.AddScoped<ILocalUserService, LocalUserService>();
         builder.Services.AddScoped<ILocalUserProfileService, LocalUserProfileService>();
+        builder.Services.AddSingleton<ExternalIdentityProviderClaimMapper>();
 
         return builder.Build();
     }

@@ -33,4 +33,6 @@ public class User : IConcurrencyAware
     public string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
 
     public virtual ICollection<UserClaim> Claims { get; set; } = new List<UserClaim>();
+
+    public virtual ICollection<UserLogin> Logins { get; set; } = new List<UserLogin>();
 }
