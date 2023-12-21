@@ -1,22 +1,27 @@
-﻿using System.Security.Claims;
-using IdentityModel;
-
-namespace IdentityServer.Web.Services;
+﻿namespace IdentityServer.Web.Services;
 
 using Microsoft.AspNetCore.Identity;
 using Data;
 using Data.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using IdentityModel;
+using Helpers;
 
 public class LocalUserService : ILocalUserService
 {
     private readonly IdentityDbContext _identityDbContext;
     private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly ExternalIdentityProviderClaimMapper _externalIdentityProviderClaimMapper;
 
-    public LocalUserService(IdentityDbContext identityDbContext, IPasswordHasher<User> passwordHasher)
+    public LocalUserService(
+        IdentityDbContext identityDbContext,
+        IPasswordHasher<User> passwordHasher,
+        ExternalIdentityProviderClaimMapper externalIdentityProviderClaimMapper)
     {
         this._identityDbContext = identityDbContext ?? throw new ArgumentNullException(nameof(identityDbContext));
         this._passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
+        this._externalIdentityProviderClaimMapper = externalIdentityProviderClaimMapper ?? throw new ArgumentNullException(nameof(externalIdentityProviderClaimMapper));
     }
 
     public async Task<bool> ValidateCredentialsAsync(string userName, string password, CancellationToken cancellationToken)
@@ -100,8 +105,57 @@ public class LocalUserService : ILocalUserService
 
         return true;
     }
+    
+    public async Task<User> EnsureExternalUserAsync(ClaimsPrincipal externalUser, string provider, string providerIdentityKey, CancellationToken cancellationToken)
+    {
+        if (externalUser is null ||
+            string.IsNullOrWhiteSpace(provider) ||
+            string.IsNullOrWhiteSpace(providerIdentityKey))
+            return null;
+        
+        var userIdClaim = externalUser.FindFirst(JwtClaimTypes.Subject) ??
+                          externalUser.FindFirst(ClaimTypes.NameIdentifier) ??
+                          throw new Exception("Unknown userid");
 
-    public async Task<User> FindByExternalProvider(string provider, string providerIdentityKey, CancellationToken cancellationToken)
+        var emailClaim = externalUser.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
+        
+        // Find external user.
+        var existingUser = await this.FindByExternalProvider(provider, providerIdentityKey, cancellationToken).ConfigureAwait(false) ??
+                           await this.GetUserByEmailAsync(emailClaim?.Value, cancellationToken).ConfigureAwait(false);
+
+        if (existingUser != null)
+            return existingUser;
+        
+        // this might be where you might initiate a custom workflow for user registration
+        // in this sample we don't show how that would be done, as our sample implementation
+        // simply auto-provisions new external user
+        //
+        // remove the user id claim so we don't include it as an extra claim if/when we provision the user
+        var claims = externalUser.Claims.ToList();
+        claims.Remove(userIdClaim);
+
+        var mappedClaims = this._externalIdentityProviderClaimMapper.MapClaims(provider, claims);
+        if (mappedClaims is null)
+            return null;
+            
+        // This must be extracted to a separate view asking the user to input this information.
+        mappedClaims.Add(new Claim("role", "FreeUser"));
+        mappedClaims.Add(new Claim("country", "be"));
+            
+        existingUser = this.AutoProvisionUser(provider, providerIdentityKey, mappedClaims);
+        await this.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return existingUser;
+    }
+
+    public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        var saveChanges = await this._identityDbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return saveChanges > 0;
+    }
+    
+    private async Task<User> FindByExternalProvider(string provider, string providerIdentityKey, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(provider))
             throw new InvalidOperationException();
@@ -115,7 +169,7 @@ public class LocalUserService : ILocalUserService
         return existingUserLogin?.User;
     }
 
-    public User AutoProvisionUser(string provider, string providerIdentityKey, IEnumerable<Claim> claims)
+    private User AutoProvisionUser(string provider, string providerIdentityKey, IEnumerable<Claim> claims)
     {
         if (string.IsNullOrWhiteSpace(provider))
             throw new InvalidOperationException();
@@ -151,11 +205,12 @@ public class LocalUserService : ILocalUserService
         this._identityDbContext.Users.Add(user);
         return user;
     }
-
-    public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)
+    
+    private Task<User> GetUserByEmailAsync(string email, CancellationToken cancellationToken)
     {
-        var saveChanges = await this._identityDbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(email))
+            throw new InvalidOperationException();
 
-        return saveChanges > 0;
+        return this._identityDbContext.Users.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
     }
 }

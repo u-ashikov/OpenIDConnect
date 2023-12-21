@@ -19,10 +19,8 @@ public interface ILocalUserService
     Task<bool> IsUserActive(string subject, CancellationToken cancellationToken);
 
     Task<bool> ActivateUserAsync(string userName, string activationCode, CancellationToken cancellationToken);
-
-    Task<User> FindByExternalProvider(string provider, string providerIdentityKey, CancellationToken cancellationToken);
     
-    User AutoProvisionUser(string provider, string providerIdentityKey, IEnumerable<Claim> claims);
+    Task<User> EnsureExternalUserAsync(ClaimsPrincipal externalUser, string provider, string providerIdentityKey, CancellationToken cancellationToken);
 
     Task<bool> SaveChangesAsync(CancellationToken cancellationToken);
 }
