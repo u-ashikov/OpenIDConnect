@@ -35,4 +35,6 @@ public class User : IConcurrencyAware
     public virtual ICollection<UserClaim> Claims { get; set; } = new List<UserClaim>();
 
     public virtual ICollection<UserLogin> Logins { get; set; } = new List<UserLogin>();
+    
+    public virtual ICollection<UserSecret> Secrets { get; set; } = new List<UserSecret>();
 }
