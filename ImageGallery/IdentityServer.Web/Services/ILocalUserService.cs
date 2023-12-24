@@ -22,5 +22,7 @@ public interface ILocalUserService
     
     Task<User> EnsureExternalUserAsync(ClaimsPrincipal externalUser, string provider, string providerIdentityKey, CancellationToken cancellationToken);
 
+    Task<bool> AddUserSecret(string subject, string name, string secret, CancellationToken cancellationToken);
+
     Task<bool> SaveChangesAsync(CancellationToken cancellationToken);
 }

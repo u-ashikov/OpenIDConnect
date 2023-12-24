@@ -148,6 +148,25 @@ public class LocalUserService : ILocalUserService
         return existingUser;
     }
 
+    public async Task<bool> AddUserSecret(string subject, string name, string secret, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(subject))
+            throw new ArgumentNullException(nameof(subject));
+        
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentNullException(nameof(name));
+        
+        if (string.IsNullOrWhiteSpace(secret))
+            throw new ArgumentNullException(nameof(secret));
+
+        var existingUser = await this.GetUserBySubjectAsync(subject, cancellationToken).ConfigureAwait(false);
+        if (existingUser is null)
+            return false;
+        
+        existingUser.Secrets.Add(new UserSecret() { Name = name, Secret = secret });
+        return true;
+    }
+
     public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)
     {
         var saveChanges = await this._identityDbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
