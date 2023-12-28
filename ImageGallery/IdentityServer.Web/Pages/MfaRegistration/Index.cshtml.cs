@@ -4,8 +4,6 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc.Filters;
 using IdentityModel;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
-using System.Text;
 using Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -14,8 +12,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 [Authorize]
 public class IndexModel : PageModel
 {
-    private readonly char[] _alphaNumericCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
-    
     private readonly ILocalUserService _localUserService;
 
     public IndexModel(ILocalUserService localUserService)
@@ -34,16 +30,18 @@ public class IndexModel : PageModel
         var existingUser = await this._localUserService.GetUserBySubjectAsync(userSubject, cancellationToken).ConfigureAwait(false);
         if (existingUser is null)
             return this.Unauthorized();
+        
+        var secret = TwoStepsAuthenticator.Authenticator.GenerateKey();
 
         this.ViewModel = new RegisterMfaSecretViewModel()
         {
             KeyUri = string.Format("otpauth://totp/{0}:{1}?secret={2}&issuer={0}", WebUtility.UrlEncode("IDP"),
-                WebUtility.UrlEncode(existingUser.Email), this.GenerateSecret()),
+                WebUtility.UrlEncode(existingUser.Email), secret),
         };
 
         this.InputModel = new RegisterMfaSecretInputModel()
         {
-            Secret = this.GenerateSecret(),
+            Secret = secret,
         };
         
         return this.Page();
@@ -56,9 +54,12 @@ public class IndexModel : PageModel
         
         var userSubject = this.User.FindFirst(JwtClaimTypes.Subject)?.Value;
         var addUserSecret = await this._localUserService.AddUserSecret(userSubject, "TOTP", this.InputModel.Secret, cancellationToken).ConfigureAwait(false);
-        
+
         if (addUserSecret)
+        {
+            await this._localUserService.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             return this.RedirectToPage("~/");
+        }
 
         await this._localUserService.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         
@@ -71,21 +72,5 @@ public class IndexModel : PageModel
         context.HttpContext.Response.Headers.Add("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; script-src 'self'");
 
         base.OnPageHandlerExecuting(context);
-    }
-
-    private string GenerateSecret()
-    {
-        var tokenData = RandomNumberGenerator.GetBytes(64);
-
-        var result = new StringBuilder(16);
-        for (var i = 0; i < 16; i++)
-        {
-            var rnd = BitConverter.ToUInt32(tokenData, i * 4);
-            var idx = rnd % this._alphaNumericCharacters.Length;
-
-            result.Append(this._alphaNumericCharacters[idx]);
-        }
-
-        return result.ToString();
     }
 }

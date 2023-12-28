@@ -1,3 +1,7 @@
+using System.Text;
+using OtpSharp;
+using TwoStepsAuthenticator;
+
 namespace IdentityServer.Web.Pages.Account.Login;
 
 using Duende.IdentityServer;
@@ -95,6 +99,22 @@ public class Index : PageModel
             else
             {
                 var existingUser = await this._localUserService.GetUserByUserNameAsync(Input.Username, cancellationToken).ConfigureAwait(false);
+                var userSecret = await this._localUserService.GetUserSecretAsync(existingUser.Subject, "TOTP", cancellationToken).ConfigureAwait(false);
+                if (userSecret is null)
+                {
+                    this.ModelState.AddModelError(string.Empty, "No second factor secret configured. Please reach out to your administrator.");
+                    await this.BuildModelAsync(Input.ReturnUrl).ConfigureAwait(false);
+                    return this.Page();
+                }
+
+                var authenticator = new TimeAuthenticator();
+                if (!authenticator.CheckCode(userSecret.Secret, Input.Totp, existingUser))
+                {
+                    this.ModelState.AddModelError(string.Empty, "TOTP is not valid.");
+                    await this.BuildModelAsync(Input.ReturnUrl).ConfigureAwait(false);
+                    return this.Page();
+                }
+                
                 await _events.RaiseAsync(new UserLoginSuccessEvent(existingUser.UserName, existingUser.Subject, existingUser.UserName, clientId: context?.Client.ClientId));
 
                 // only set explicit expiration here if user chooses "remember me". 

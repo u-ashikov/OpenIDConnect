@@ -2,9 +2,9 @@
 // See LICENSE in the project root for license information.
 
 
+namespace IdentityServer.Web.Pages.Login;
 using System.ComponentModel.DataAnnotations;
 
-namespace IdentityServer.Web.Pages.Login;
 
 public class InputModel
 {
@@ -19,4 +19,7 @@ public class InputModel
     public string ReturnUrl { get; set; }
 
     public string Button { get; set; }
+    
+    [Required]
+    public string Totp { get; set; }
 }
