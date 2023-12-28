@@ -24,5 +24,7 @@ public interface ILocalUserService
 
     Task<bool> AddUserSecret(string subject, string name, string secret, CancellationToken cancellationToken);
 
+    Task<UserSecret> GetUserSecretAsync(string subject, string name, CancellationToken cancellationToken);
+
     Task<bool> SaveChangesAsync(CancellationToken cancellationToken);
 }

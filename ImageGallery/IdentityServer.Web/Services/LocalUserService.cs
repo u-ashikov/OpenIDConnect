@@ -167,6 +167,17 @@ public class LocalUserService : ILocalUserService
         return true;
     }
 
+    public Task<UserSecret> GetUserSecretAsync(string subject, string name, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(subject))
+            throw new ArgumentNullException(nameof(subject));
+        
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentNullException(nameof(name));
+        
+        return this._identityDbContext.UserSecrets.FirstOrDefaultAsync(s => s.User.Subject == subject && s.Name == name, cancellationToken);
+    }
+
     public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken)
     {
         var saveChanges = await this._identityDbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
