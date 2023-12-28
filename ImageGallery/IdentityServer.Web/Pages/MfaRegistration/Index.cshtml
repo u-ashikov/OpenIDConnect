@@ -1,0 +1,38 @@
+﻿@page
+@model IdentityServer.Web.Pages.MfaRegistration.IndexModel
+
+<div>
+    <div class="page-header">
+        <h1>Register for MFA</h1>
+    </div>
+
+    <partial name="_ValidationSummary"/>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Scan the QR code with your authenticator application, or manually enter the code you see underneath the QR code in your authenticator application</h3>
+                </div>
+                <div class="panel-body">
+                    <form asp-page="/MfaRegistration/Index">
+                        <fieldset>
+                            <input asp-for="InputModel.Secret"/>
+                            <div id="qrCode" class="bg-light p-3 w-25 text-center"></div>
+                            <div id="qrCodeKeyUri">@Model.ViewModel.KeyUri</div>
+                            <div class="form-group">
+                                <button class="btn btn-primary">Registration Secret</button>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript" src="~/lib/qrcodejs/qrcode.min.js"></script>
+    <script type="text/javascript" src="~/js/qrcodeHelper.js"></script>
+}

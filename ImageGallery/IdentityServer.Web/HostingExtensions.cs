@@ -1,7 +1,6 @@
-using IdentityServer.Web.Helpers;
-
 namespace IdentityServer.Web;
 
+using IdentityServer.Web.Helpers;
 using Duende.IdentityServer;
 using IdentityServer.Web.Data.Models;
 using Microsoft.AspNetCore.Identity;

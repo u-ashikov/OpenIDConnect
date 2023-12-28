@@ -1,7 +1,7 @@
-﻿using System.Net;
+﻿namespace IdentityServer.Web.Pages.MfaRegistration;
 
-namespace IdentityServer.Web.Pages.MfaRegistration;
-
+using System.Net;
+using Microsoft.AspNetCore.Mvc.Filters;
 using IdentityModel;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
@@ -64,6 +64,13 @@ public class IndexModel : PageModel
         
         this.ModelState.AddModelError(string.Empty, "Unable to add the secret you have provided for MFA.");
         return this.Page();
+    }
+    
+    public override void OnPageHandlerExecuting(PageHandlerExecutingContext context)
+    {
+        context.HttpContext.Response.Headers.Add("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; script-src 'self'");
+
+        base.OnPageHandlerExecuting(context);
     }
 
     private string GenerateSecret()

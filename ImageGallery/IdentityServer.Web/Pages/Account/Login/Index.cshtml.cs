@@ -1,4 +1,3 @@
-
 namespace IdentityServer.Web.Pages.Account.Login;
 
 using Duende.IdentityServer;
